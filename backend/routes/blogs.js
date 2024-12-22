@@ -1,20 +1,23 @@
 const express = require("express");
 const Blog = require("../models/Blog");
+const User = require("../models/User");
 const { protect, admin } = require("../middleware/auth"); // Import protect and admin middleware
+const { protectBlogs, adminBlogs } = require("../middleware/blog"); // Import protect and admin middleware
 const router = express.Router();
 
 // Create Blog (Admin only)
-router.post("/", protect, admin, async (req, res) => {
+router.post("/", protectBlogs, adminBlogs, async (req, res) => {
   const { title, content, image, category, tags } = req.body;
 
   try {
     // Create a new blog post
+    const tagArray = tags.split(",").map((tag) => tag.trim());
     const blog = new Blog({
       title,
       content,
       image,
       category,
-      tags,
+      tags: tagArray,
       author: req.user.id, // Set the author to the logged-in admin's user ID
     });
 
@@ -85,50 +88,51 @@ router.get("/getallblogs", protect, async (req, res) => {
   }
 });
 
-// Update Blog (Admin only)
-router.put("/:id", protect, admin, async (req, res) => {
-  const { title, content, image, category, tags } = req.body;
-  const { id } = req.params;
-
+router.put("/:id", async (req, res) => {
   try {
-    // Find the blog post by ID
-    const blog = await Blog.findById(id);
+    const { title, content, image, category, tags } = req.body;
 
+    // Find the blog by ID
+    const blog = await Blog.findById(req.params.id);
     if (!blog) {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    // Update the blog fields
+    // Split tags string into an array if it's a comma-separated string
+    let updatedTags = blog.tags; // Default to the existing tags
+    if (tags) {
+      updatedTags = tags.split(",").map((tag) => tag.trim());
+    }
+
+    // Update the blog
     blog.title = title || blog.title;
     blog.content = content || blog.content;
     blog.image = image || blog.image;
     blog.category = category || blog.category;
-    blog.tags = tags || blog.tags;
+    blog.tags = updatedTags; // Update the tags with the new value
 
-    // Save the updated blog
     await blog.save();
+
     res.status(200).json({ message: "Blog updated successfully", blog });
   } catch (error) {
+    console.error("Error updating blog:", error);
     res.status(500).json({ message: "Error updating blog" });
   }
 });
 
 // Delete Blog (Admin only)
-router.delete("/:id", protect, admin, async (req, res) => {
-  const { id } = req.params;
-
+router.delete("/:id", async (req, res) => {
   try {
-    // Find the blog post by ID
-    const blog = await Blog.findByIdAndDelete(id);
-
+    // Find the blog by ID and delete it
+    const blog = await Blog.findByIdAndDelete(req.params.id);
     if (!blog) {
       return res.status(404).json({ message: "Blog not found" });
     }
 
     res.status(200).json({ message: "Blog deleted successfully" });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error deleting blog", error });
+    console.error("Error deleting blog:", error);
+    res.status(500).json({ message: "Error deleting blog" });
   }
 });
 
@@ -164,39 +168,22 @@ router.post("/:blogId/comments", protect, async (req, res) => {
 });
 
 // Get blog details along with comments
-router.get("/:blogId", async (req, res) => {
-  const { blogId } = req.params;
 
-  try {
-    const blog = await Blog.findById(blogId).populate(
-      "comments.user",
-      "username"
-    ); // Populate user details in comments
-    if (!blog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-    res.status(200).json({ blog }); // Send back the blog data with comments
-  } catch (error) {
-    console.error("Error fetching blog details:", error);
-    res.status(500).json({ message: "Error fetching blog details" });
-  }
-});
+// router.get("/me", protect, async (req, res) => {
+//   try {
+//     // Find the user by the ID from the JWT token
+//     const user = await Blog.findById(req.user.id); // Exclude password from the response
 
-router.get("/me", protect, async (req, res) => {
-  try {
-    // Find the user by the ID from the JWT token
-    const user = await Blog.findById(req.user.id); // Exclude password from the response
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Send the user details as response
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-});
+//     // Send the user details as response
+//     res.json(user);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// });
 
 router.post("/:blogId/bookmark", protect, async (req, res) => {
   try {
@@ -234,6 +221,94 @@ router.get("/blogs/bookmarks", protect, async (req, res) => {
     res.json({ bookmarks: bookmarkedBlogIds });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/adminBlogs", protect, admin, async (req, res) => {
+  try {
+    // Log the admin's user ID
+    // console.log("Admin user ID:", req.user.id); // Log the admin's ID to verify it's correct
+
+    // Ensure that req.user.id is a valid ObjectId and use it to query the blogs
+    const blogs = await Blog.find({ author: req.user.id });
+
+    if (blogs.length === 0) {
+      return res.status(404).json({ message: "No blogs found for this admin" });
+    }
+
+    res.status(200).json({ blogs });
+  } catch (error) {
+    console.error("Error fetching admin blogs:", error);
+    res.status(500).json({ message: "Error fetching blogs", error });
+  }
+});
+
+router.get("/:blogId", async (req, res) => {
+  const { blogId } = req.params;
+
+  try {
+    const blog = await Blog.findById(blogId).populate(
+      "comments.user",
+      "username"
+    ); // Populate user details in comments
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+    res.status(200).json({ blog }); // Send back the blog data with comments
+  } catch (error) {
+    console.error("Error fetching blog details:", error);
+    res.status(500).json({ message: "Error fetching blog details" });
+  }
+});
+
+router.post("/:blogId/favourite", protectBlogs, async (req, res) => {
+  const { blogId } = req.params;
+  const userId = req.user.id; // Extracted from the authentication middleware
+
+  try {
+    // Find the blog by ID
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    // Find the user and update their favourites
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User nosst found" });
+    }
+
+    // Check if the blog is already in the user's favourites
+    if (user.favourites.includes(blogId)) {
+      // If it's already a favourite, remove it
+      user.favourites.pull(blogId);
+    } else {
+      // If it's not a favourite, add it
+      user.favourites.push(blogId);
+    }
+
+    await user.save(); // Save the user after updating their favourites
+    res.status(200).json({ message: "Favourite status updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/user/favourites", protect, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    // Find the user and populate their favourites
+    const user = await User.findById(userId).populate("favourites"); // Populate the favourite blogs
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favourites); // Return the favourite blogs
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

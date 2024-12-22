@@ -4,8 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { protect, admin } = require("../middleware/auth");
+const { protectBlogs } = require("../middleware/blog");
 
-// Register Route
 // Register Route
 router.post("/register", async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
     res.cookie("token", token, {
@@ -53,7 +53,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" }
     );
 
     // Set token in the cookie
@@ -83,6 +83,64 @@ router.get("/me", protect, async (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
+  }
+});
+
+router.get("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password"); // Exclude password
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({
+      username: user.username,
+      email: user.email,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error fetching user data", error: err.message });
+  }
+});
+
+// Update user profile
+router.put("/profile", protect, async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.findByIdAndUpdate(req.user.id, {
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(200).json({ message: "Profile updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
+
+// Get a user's favourite blogs
+router.get("/user/favourites", protectBlogs, async (req, res) => {
+  const userId = req.user._id; // Extracted from the authentication middleware
+
+  try {
+    // Find the user and populate their favourites
+    const user = await User.findById(userId).populate("favourites"); // Populate the favourite blogs
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favourites); // Return the favourite blogs
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

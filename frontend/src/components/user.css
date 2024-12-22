@@ -79,3 +79,90 @@ body {
     color: #555;
   }
   
+
+  .blog-category {
+    font-size: 14px;
+    color: black;
+    background-color: #d0c5c5;
+    width: fit-content;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 7px;
+    position: relative;
+    right: 5px;
+    margin: 6px;
+  }
+  
+  .no-category {
+    font-style: italic;
+    color: #aaa;
+    font-size: 12px;
+  }
+  
+
+  /* Style for the container of the tags */
+.blog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Space between tags */
+  margin-top: 10px;
+}
+
+/* Style for each individual tag */
+.tag {
+  background-color: black; /* Blue background */
+  color: white; /* White text color */
+  padding: 5px 10px; /* Padding around the text */
+  border-radius: 9px; /* Rounded corners */
+  font-size: 14px; /* Font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+/* Hover effect for each tag */
+.tag:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Style for when no tags are available */
+
+
+/* Optional: To make the tag text bold */
+.tag {
+  font-weight: bold;
+}
+
+
+/* Style for the container of the category */
+.blog-category {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+/* Horizontal line before the category */
+.category-line {
+  border: 0;
+  margin: 0;
+  width: 100%; /* The line spans the full width of the container */
+}
+
+/* Label for the category */
+.category-label {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333; /* Dark color for the label */
+  margin-right: 5px; /* Space between the label and category */
+}
+
+/* Style for the category text */
+.category {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333; /* Dark color for the category text */
+}
+
+/* Style when no category is available */
+.no-category {
+  color: #777; /* Grey color for no category */
+  font-style: italic;
+}

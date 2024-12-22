@@ -74,6 +74,27 @@ const UserPage = () => {
     }
   };
 
+  const handleFavourite = async (blogId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/blogs/${blogId}/favourite`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      // Optionally update UI after adding/removing from favourites
+      setBookmarkedBlogs((prev) =>
+        prev.includes(blogId)
+          ? prev.filter((id) => id !== blogId)
+          : [...prev, blogId]
+      );
+    } catch (err) {
+      console.error("Failed to favourite blog", err);
+    }
+  };
+
   // Use useEffect to fetch blogs when the component mounts
   useEffect(() => {
     fetchBlogs();
@@ -84,9 +105,16 @@ const UserPage = () => {
     navigate(`/blog/${blogId}`);
   };
 
+  const goToFavourites = () => {
+    navigate("/favourites");
+  };
+
   return (
     <div className="user-page-container">
       <h2>Blogs</h2>
+      <button className="favourites-button" onClick={goToFavourites}>
+        View Favourite Blogs
+      </button>
       <div className="blogs-list">
         {blogs.length > 0 ? (
           blogs.map((blog) => (
@@ -104,15 +132,42 @@ const UserPage = () => {
                 {blog.content.split(" ").slice(0, 30).join(" ")}...
               </p>
 
+              {/* Tags Section */}
+              <div className="blog-tags">
+                {blog.tags && blog.tags.length > 0 ? (
+                  blog.tags.map((tag, index) => (
+                    <span key={index} className="tag">
+                      #{tag} {/* Ensure # is applied to every tag */}
+                    </span>
+                  ))
+                ) : (
+                  <span className="no-tags">No tags available</span>
+                )}
+              </div>
+
+              {/* Category Section */}
+
+              <div className="blog-category">
+                <hr className="category-line" /> {/* Line above the category */}
+                <span className="category-label">Category: </span>{" "}
+                {/* Add the label before the category */}
+                {blog.category ? (
+                  <span className="category">{blog.category}</span>
+                ) : (
+                  <span className="no-category">No category available</span>
+                )}
+              </div>
+
+              {/* Blog Actions */}
               <div className="blog-actions">
                 {/* Read More Button */}
                 <button onClick={() => handleBlogClick(blog._id)}>
                   Read More
                 </button>
 
-                {/* Bookmark Button */}
+                {/* favourite Button */}
                 <button
-                  onClick={() => handleBookmark(blog._id)}
+                  onClick={() => handleFavourite(blog._id)}
                   className={
                     bookmarkedBlogs.includes(blog._id)
                       ? "bookmark-button bookmarked"

@@ -10,7 +10,15 @@ const app = express();
 
 const cors = require("cors");
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow all origins, but still support credentials
+      callback(null, origin || true); // `origin || true` ensures non-browser requests are allowed
+    },
+    credentials: true, // Allow cookies to be sent with requests
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json()); // to parse JSON request bodies

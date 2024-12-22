@@ -1,0 +1,89 @@
+/* General profile container */
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Title */
+  .profile-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Error message */
+  .error {
+    color: red;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  /* Form groups */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-size: 16px;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #333;
+    background-color: #fff;
+  }
+  
+  /* Action buttons */
+  .form-actions {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .form-actions button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #333;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .form-actions button:hover {
+    background-color: #555;
+  }
+  
+  .form-actions button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  /* Edit Profile button */
+  .form-actions button[type="button"] {
+    background-color: black;
+  }
+  
+  .form-actions button[type="button"]:hover {
+    background-color: rgb(22, 20, 20);
+  }
+  

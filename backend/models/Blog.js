@@ -22,6 +22,7 @@ const blogSchema = new mongoose.Schema({
       readAt: { type: Date, default: Date.now }, // Timestamp of when the blog was read
     },
   ],
+  favourites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Blog" }]
 });
 
 const Blog = mongoose.model("Blog", blogSchema);

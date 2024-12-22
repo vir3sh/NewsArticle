@@ -15,18 +15,23 @@ const AdminPanel = () => {
   const [editingBlog, setEditingBlog] = useState(null);
   const [error, setError] = useState(null);
   const [showAddBlogForm, setShowAddBlogForm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // To control the modal visibility
+  const [showEditModal, setShowEditModal] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch blogs on component mount
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:5000/api/blogs", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setBlogs(response.data);
+        const response = await axios.get(
+          "http://localhost:5000/api/blogs/adminBlogs",
+          {
+            withCredentials: true,
+          }
+        );
+        console.log("Blogs fetched:", response.data);
+        setBlogs(response.data.blogs); // Assuming response has a `blogs` key
       } catch (err) {
+        console.error("Error fetching blogs:", err);
         setError("Error fetching blogs.");
       }
     };
@@ -44,11 +49,10 @@ const AdminPanel = () => {
 
   const handleAddBlog = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
 
     try {
       await axios.post("http://localhost:5000/api/blogs", newBlog, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
       setNewBlog({
         title: "",
@@ -58,10 +62,13 @@ const AdminPanel = () => {
         tags: "",
       });
       setShowAddBlogForm(false);
-      const response = await axios.get("http://localhost:5000/api/blogs", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBlogs(response.data);
+      const response = await axios.get(
+        "http://localhost:5000/api/blogs/adminBlogs",
+        {
+          withCredentials: true,
+        }
+      );
+      setBlogs(response.data.blogs);
     } catch (err) {
       setError("Error adding blog.");
     }
@@ -76,26 +83,28 @@ const AdminPanel = () => {
       category: blog.category,
       tags: blog.tags,
     });
-    setShowEditModal(true); // Show the modal when editing a blog
+    setShowEditModal(true);
   };
 
   const handleUpdateBlog = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
 
     try {
       await axios.put(
         `http://localhost:5000/api/blogs/${editingBlog._id}`,
         newBlog,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         }
       );
-      const response = await axios.get("http://localhost:5000/api/blogs", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBlogs(response.data);
-      setShowEditModal(false); // Close the modal after updating
+      const response = await axios.get(
+        "http://localhost:5000/api/blogs/adminBlogs",
+        {
+          withCredentials: true,
+        }
+      );
+      setBlogs(response.data.blogs);
+      setShowEditModal(false);
       setEditingBlog(null);
       setNewBlog({
         title: "",
@@ -110,16 +119,17 @@ const AdminPanel = () => {
   };
 
   const handleDeleteBlog = async (id) => {
-    const token = localStorage.getItem("token");
-
     try {
       await axios.delete(`http://localhost:5000/api/blogs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
       });
-      const response = await axios.get("http://localhost:5000/api/blogs", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBlogs(response.data);
+      const response = await axios.get(
+        "http://localhost:5000/api/blogs/adminBlogs",
+        {
+          withCredentials: true,
+        }
+      );
+      setBlogs(response.data.blogs);
     } catch (err) {
       setError("Error deleting blog.");
     }
@@ -139,7 +149,7 @@ const AdminPanel = () => {
         {showAddBlogForm ? "Cancel" : "Add New Blog"}
       </button>
 
-      {/* Form to Add or Edit Blog */}
+      {/* Add Blog Form */}
       {showAddBlogForm && (
         <form
           onSubmit={editingBlog ? handleUpdateBlog : handleAddBlog}
@@ -181,7 +191,7 @@ const AdminPanel = () => {
             value={newBlog.tags}
             onChange={handleChange}
           />
-          <button className="addbtnmodal" type="submit">
+          <button type="submit" className="addbtnmodal">
             {editingBlog ? "Update Blog" : "Add Blog"}
           </button>
         </form>
@@ -194,18 +204,13 @@ const AdminPanel = () => {
           <div key={blog._id} className="blog-card">
             <div className="blog-card-content">
               <h4>{blog.title}</h4>
-
-              {/* Display truncated content */}
               <p>
                 {blog.content.split(" ").slice(0, 30).join(" ")}
                 {blog.content.split(" ").length > 30 ? "..." : ""}
               </p>
-
-              {/* Display image */}
               {blog.image && (
                 <img src={blog.image} alt={blog.title} className="blog-image" />
               )}
-
               <div className="blog-card-footer">
                 <p>
                   <strong>Category:</strong> {blog.category}
@@ -215,7 +220,6 @@ const AdminPanel = () => {
                 </p>
               </div>
             </div>
-
             <div className="blog-card-actions">
               <button onClick={() => handleEditBlog(blog)} className="edit-btn">
                 Edit
@@ -240,11 +244,11 @@ const AdminPanel = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)", // semi-transparent background
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            zIndex: 1000, // Ensure modal is above other content
+            zIndex: 1000,
           }}
           className="modal"
         >
@@ -253,7 +257,7 @@ const AdminPanel = () => {
               backgroundColor: "#fff",
               padding: "20px",
               borderRadius: "8px",
-              width: "500px", // Adjust width of modal as needed
+              width: "500px",
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
             }}
             className="modal-content"
@@ -267,7 +271,7 @@ const AdminPanel = () => {
                   fontSize: "20px",
                   cursor: "pointer",
                 }}
-                onClick={() => setShowEditModal(false)} // Close the modal
+                onClick={() => setShowEditModal(false)}
               >
                 &times;
               </button>
@@ -280,13 +284,6 @@ const AdminPanel = () => {
                 value={newBlog.title}
                 onChange={handleChange}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "8px 0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                }}
               />
               <textarea
                 name="content"
@@ -294,14 +291,6 @@ const AdminPanel = () => {
                 value={newBlog.content}
                 onChange={handleChange}
                 required
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "8px 0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                  minHeight: "100px",
-                }}
               />
               <input
                 type="text"
@@ -309,13 +298,6 @@ const AdminPanel = () => {
                 placeholder="Image URL"
                 value={newBlog.image}
                 onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "8px 0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                }}
               />
               <input
                 type="text"
@@ -323,13 +305,6 @@ const AdminPanel = () => {
                 placeholder="Category"
                 value={newBlog.category}
                 onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "8px 0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                }}
               />
               <input
                 type="text"
@@ -337,44 +312,10 @@ const AdminPanel = () => {
                 placeholder="Tags (comma separated)"
                 value={newBlog.tags}
                 onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "8px 0",
-                  borderRadius: "4px",
-                  border: "1px solid #ddd",
-                }}
               />
-              <div className="modal-footer" style={{ marginTop: "20px" }}>
-                <button
-                  type="submit"
-                  style={{
-                    backgroundColor: "#4CAF50",
-                    color: "white",
-                    padding: "10px 20px",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Update Blog
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)} // Close the modal
-                  style={{
-                    backgroundColor: "#f44336",
-                    color: "white",
-                    padding: "10px 20px",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    marginLeft: "10px",
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
+              <button type="submit" className="addbtnmodal">
+                Update Blog
+              </button>
             </form>
           </div>
         </div>
