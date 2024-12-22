@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./register.css"; // Ensure your CSS file is imported
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -22,9 +21,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        `${
-          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
-        }/api/auth/register`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/register`,
         formData
       );
       const { token } = response.data;
