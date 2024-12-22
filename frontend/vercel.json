@@ -3,11 +3,10 @@
     "builds": [
       {
         "src": "package.json",
-        "use": "@vercel/node"
-      },
-      {
-        "src": "src/**/*",
-        "use": "@vercel/static-build"
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "dist"
+        }
       }
     ],
     "routes": [
@@ -15,9 +14,6 @@
         "src": "/(.*)",
         "dest": "/index.html"
       }
-    ],
-    "env": {
-      "REACT_APP_API_URL": "news-article-8kd3e4k4l-vireshs-projects.vercel.app"
-    }
+    ]
   }
   
