@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; // Correct import for jwtDecode
-import "./commentsPage.css";
+import "./commentspage.css";
 
 const CommentsPage = () => {
   const [comments, setComments] = useState([]);
