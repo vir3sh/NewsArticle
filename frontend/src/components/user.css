@@ -194,3 +194,25 @@ body {
   display: flex;
   justify-content: space-between;
 }
+.pagination button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  background-color: black;
+  width: 40px;
+}
+
+.pagination button.active {
+  background-color: #2d2e2d;
+  color: white;
+}
+
+.pagination button:hover {
+  background-color: #2d2e2d;
+}
+.pagination{
+  text-align: center;
+  margin: 10px;
+  padding: 10px;
+  
+}

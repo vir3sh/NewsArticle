@@ -15,7 +15,9 @@ const BlogDetail = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:5000/api/blogs/${blogId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/api/blogs/${blogId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -27,7 +29,9 @@ const BlogDetail = () => {
 
         // Fetch admin details using the author._id
         const adminResponse = await axios.get(
-          `http://localhost:5000/api/blogs/me/${response.data.blog.author._id}`,
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/blogs/me/${
+            response.data.blog.author._id
+          }`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,7 +53,9 @@ const BlogDetail = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/api/blogs/${blogId}/comments`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/${blogId}/comments`,
         { content: comment },
         {
           headers: {

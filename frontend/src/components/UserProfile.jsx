@@ -23,7 +23,7 @@ const UserProfile = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:5000/api/auth/profile",
+          `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ const UserProfile = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        "http://localhost:5000/api/auth/profile",
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/auth/profile`,
         userData,
         {
           headers: {

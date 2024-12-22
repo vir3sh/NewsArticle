@@ -12,7 +12,9 @@ const AllCommentsPage = () => {
     const fetchAllComments = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/blogs/comments/all`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/api/blogs/comments/all`,
           { withCredentials: true }
         );
         setComments(response.data.comments);
@@ -28,7 +30,9 @@ const AllCommentsPage = () => {
   const handleDeleteComment = async (commentId) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/blogs/comments/delete/${commentId}`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/comments/delete/${commentId}`,
         { withCredentials: true }
       );
       setComments((prevComments) =>

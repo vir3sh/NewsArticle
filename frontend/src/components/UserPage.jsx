@@ -9,17 +9,22 @@ const UserPage = () => {
   const [searchQuery, setSearchQuery] = useState(""); // State for the search query
   const [filteredBlogs, setFilteredBlogs] = useState([]); // State for filtered blogs
   const [searchOption, setSearchOption] = useState("title"); // Default search option (by title)
+  const [currentPage, setCurrentPage] = useState(1); // State for the current page
+  const [blogsPerPage] = useState(6); // Number of blogs per page
   const navigate = useNavigate();
 
   // Function to fetch blogs
   const fetchBlogs = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:5000/api/blogs", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/blogs`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       setBlogs(response.data);
       setFilteredBlogs(response.data); // Initially, display all blogs
@@ -33,7 +38,9 @@ const UserPage = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `http://localhost:5000/api/blogs/${blogId}/bookmark`, // Post request to toggle bookmark
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/${blogId}/bookmark`,
         {},
         {
           headers: {
@@ -55,31 +62,12 @@ const UserPage = () => {
     }
   };
 
-  // Function to fetch the list of bookmarked blogs
-  const fetchBookmarkedBlogs = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const response = await axios.get(
-        "http://localhost:5000/api/blogs/bookmarks", // Endpoint for fetching bookmarked blogs
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setBookmarkedBlogs(response.data.bookmarks); // Set the list of bookmarked blogs
-    } catch (error) {
-      console.error("Error fetching bookmarked blogs:", error);
-    }
-  };
-
   const handleFavourite = async (blogId) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/blogs/${blogId}/favourite`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/${blogId}/favourite`,
         {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -127,9 +115,24 @@ const UserPage = () => {
     setSearchOption(event.target.value);
   };
 
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Get current blogs for the current page
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+
+  // Pagination Controls
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(filteredBlogs.length / blogsPerPage); i++) {
+    pageNumbers.push(i);
+  }
+
   useEffect(() => {
     fetchBlogs();
-    fetchBookmarkedBlogs();
   }, []);
 
   const handleBlogClick = (blogId) => {
@@ -169,8 +172,8 @@ const UserPage = () => {
       </button>
 
       <div className="blogs-list">
-        {filteredBlogs.length > 0 ? (
-          filteredBlogs.map((blog) => (
+        {currentBlogs.length > 0 ? (
+          currentBlogs.map((blog) => (
             <div key={blog._id} className="blog-item">
               {/* Blog Image */}
               {blog.image && (
@@ -233,6 +236,19 @@ const UserPage = () => {
         ) : (
           <p className="empty-state">No blogs available</p>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="pagination">
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            onClick={() => handlePageChange(number)}
+            className={currentPage === number ? "active" : ""}
+          >
+            {number}
+          </button>
+        ))}
       </div>
     </div>
   );

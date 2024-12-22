@@ -12,7 +12,9 @@ const FavouriteBlogs = () => {
     const fetchFavouriteBlogs = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/blogs/user/favourites",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/api/blogs/user/favourites`,
           { withCredentials: true },
           {
             headers: {

@@ -331,7 +331,7 @@ router.get("/comments/:adminId", protect, admin, async (req, res) => {
     res.status(200).json({ comments: allComments });
   } catch (error) {
     console.error("Error fetching comments:", error);
-    res.status(500).json({ message: "Error fetching comments" });
+    res.status(500).json({ message: "Error fetching commenssts" });
   }
 });
 

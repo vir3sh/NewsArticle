@@ -22,7 +22,9 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/auth/register`,
         formData
       );
       const { token } = response.data;

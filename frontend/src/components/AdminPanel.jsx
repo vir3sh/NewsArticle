@@ -23,7 +23,9 @@ const AdminPanel = () => {
     const fetchBlogs = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/blogs/adminBlogs",
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/api/blogs/adminBlogs`,
           {
             withCredentials: true,
           }
@@ -51,9 +53,13 @@ const AdminPanel = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/blogs", newBlog, {
-        withCredentials: true,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/blogs`,
+        newBlog,
+        {
+          withCredentials: true,
+        }
+      );
       setNewBlog({
         title: "",
         content: "",
@@ -63,7 +69,9 @@ const AdminPanel = () => {
       });
       setShowAddBlogForm(false);
       const response = await axios.get(
-        "http://localhost:5000/api/blogs/adminBlogs",
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/adminBlogs`,
         {
           withCredentials: true,
         }
@@ -91,14 +99,18 @@ const AdminPanel = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/blogs/${editingBlog._id}`,
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/blogs/${
+          editingBlog._id
+        }`,
         newBlog,
         {
           withCredentials: true,
         }
       );
       const response = await axios.get(
-        "http://localhost:5000/api/blogs/adminBlogs",
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/adminBlogs`,
         {
           withCredentials: true,
         }
@@ -120,11 +132,16 @@ const AdminPanel = () => {
 
   const handleDeleteBlog = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/blogs/${id}`, {
-        withCredentials: true,
-      });
+      await axios.delete(
+        `${import.meta.env.VITE_REACT_APP_BACKEND_BASEURL}/api/blogs/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
       const response = await axios.get(
-        "http://localhost:5000/api/blogs/adminBlogs",
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/adminBlogs`,
         {
           withCredentials: true,
         }

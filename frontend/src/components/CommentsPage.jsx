@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Decode token to get adminId
+import { jwtDecode } from "jwt-decode"; // Correct import for jwtDecode
 import "./commentsPage.css";
 
 const CommentsPage = () => {
   const [comments, setComments] = useState([]);
   const [error, setError] = useState(null);
 
-  // Fetch all comments on mount
+  const getTokenFromCookies = () => {
+    const match = document.cookie.match(/(^| )token=([^;]+)/);
+    return match ? match[2] : null;
+  };
+
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const token = document.cookie.split("=")[1]; // Get the token from cookies or local storage
-        const decoded = jwtDecode(token); // Decode token to get adminId
-        const adminId = decoded.id; // Assuming the token has the `id` field as `adminId`
+        const token = getTokenFromCookies();
+        if (!token) {
+          setError("User is not authenticated.");
+          return;
+        }
+
+        const decoded = jwtDecode(token);
+        const adminId = decoded.id;
 
         const response = await axios.get(
-          `http://localhost:5000/api/blogs/comments/${adminId}`,
+          `${
+            import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+          }/api/blogs/comments/${adminId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -24,7 +35,8 @@ const CommentsPage = () => {
             withCredentials: true,
           }
         );
-        setComments(response.data.comments); // Set comments from the response
+
+        setComments(response.data.comments || []);
       } catch (err) {
         console.error("Error fetching comments:", err);
         setError("Error fetching comments.");
@@ -34,15 +46,21 @@ const CommentsPage = () => {
     fetchComments();
   }, []);
 
-  // Delete a comment
   const handleDelete = async (commentId) => {
     try {
-      const token = document.cookie.split("=")[1]; // Get the token from cookies or local storage
-      const decoded = jwtDecode(token); // Decode token to get adminId
+      const token = getTokenFromCookies();
+      if (!token) {
+        setError("User is not authenticated.");
+        return;
+      }
+
+      const decoded = jwtDecode(token);
       const adminId = decoded.id;
 
       await axios.delete(
-        `http://localhost:5000/api/blogs/comments/${adminId}/${commentId}`,
+        `${
+          import.meta.env.VITE_REACT_APP_BACKEND_BASEURL
+        }/api/blogs/comments/${adminId}/${commentId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -50,7 +68,7 @@ const CommentsPage = () => {
           withCredentials: true,
         }
       );
-      // Remove the deleted comment from the state
+
       setComments((prevComments) =>
         prevComments.filter((comment) => comment.commentId !== commentId)
       );
