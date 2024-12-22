@@ -5,7 +5,10 @@ import "./user.css";
 
 const UserPage = () => {
   const [blogs, setBlogs] = useState([]);
-  const [bookmarkedBlogs, setBookmarkedBlogs] = useState([]); // Keep track of bookmarked blogs
+  const [bookmarkedBlogs, setBookmarkedBlogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // State for the search query
+  const [filteredBlogs, setFilteredBlogs] = useState([]); // State for filtered blogs
+  const [searchOption, setSearchOption] = useState("title"); // Default search option (by title)
   const navigate = useNavigate();
 
   // Function to fetch blogs
@@ -19,6 +22,7 @@ const UserPage = () => {
       });
 
       setBlogs(response.data);
+      setFilteredBlogs(response.data); // Initially, display all blogs
     } catch (error) {
       console.error("Error fetching blogs:", error);
     }
@@ -40,14 +44,12 @@ const UserPage = () => {
 
       const isBookmarked = bookmarkedBlogs.includes(blogId);
       if (isBookmarked) {
-        // Remove from bookmarks
         setBookmarkedBlogs(bookmarkedBlogs.filter((id) => id !== blogId));
       } else {
-        // Add to bookmarks
         setBookmarkedBlogs([...bookmarkedBlogs, blogId]);
       }
 
-      console.log(response.data.message); // Log success message
+      console.log(response.data.message);
     } catch (error) {
       console.error("Error toggling bookmark:", error);
     }
@@ -63,7 +65,7 @@ const UserPage = () => {
         "http://localhost:5000/api/blogs/bookmarks", // Endpoint for fetching bookmarked blogs
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Add token in the headers
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -84,7 +86,6 @@ const UserPage = () => {
         }
       );
 
-      // Optionally update UI after adding/removing from favourites
       setBookmarkedBlogs((prev) =>
         prev.includes(blogId)
           ? prev.filter((id) => id !== blogId)
@@ -95,7 +96,37 @@ const UserPage = () => {
     }
   };
 
-  // Use useEffect to fetch blogs when the component mounts
+  // Function to handle search input change
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    let filtered;
+    if (searchOption === "category") {
+      // Filter blogs based on category
+      filtered = blogs.filter((blog) =>
+        blog.category ? blog.category.toLowerCase().includes(query) : false
+      );
+    } else if (searchOption === "tags") {
+      // Filter blogs based on tags
+      filtered = blogs.filter((blog) =>
+        blog.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    } else {
+      // Default: Filter by title
+      filtered = blogs.filter((blog) =>
+        blog.title.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredBlogs(filtered);
+  };
+
+  // Handle search option change (category or tags)
+  const handleSearchOptionChange = (event) => {
+    setSearchOption(event.target.value);
+  };
+
   useEffect(() => {
     fetchBlogs();
     fetchBookmarkedBlogs();
@@ -111,13 +142,35 @@ const UserPage = () => {
 
   return (
     <div className="user-page-container">
-      <h2>Blogs</h2>
+      <h2>News</h2>
+
+      {/* Search Bar */}
+      <div className="search-bar">
+        <select
+          value={searchOption}
+          onChange={handleSearchOptionChange} // Handle search option change (by title, category, or tags)
+          className="search-option-select"
+        >
+          <option value="title">Search by Title</option>
+          <option value="category">Search by Category</option>
+          <option value="tags">Search by Tags</option>
+        </select>
+        <input
+          type="text"
+          placeholder={`Search by ${searchOption}...`}
+          value={searchQuery}
+          onChange={handleSearch} // Handle search input change
+          className="search-input"
+        />
+      </div>
+
       <button className="favourites-button" onClick={goToFavourites}>
         View Favourite Blogs
       </button>
+
       <div className="blogs-list">
-        {blogs.length > 0 ? (
-          blogs.map((blog) => (
+        {filteredBlogs.length > 0 ? (
+          filteredBlogs.map((blog) => (
             <div key={blog._id} className="blog-item">
               {/* Blog Image */}
               {blog.image && (
@@ -137,7 +190,7 @@ const UserPage = () => {
                 {blog.tags && blog.tags.length > 0 ? (
                   blog.tags.map((tag, index) => (
                     <span key={index} className="tag">
-                      #{tag} {/* Ensure # is applied to every tag */}
+                      #{tag}
                     </span>
                   ))
                 ) : (
@@ -146,11 +199,9 @@ const UserPage = () => {
               </div>
 
               {/* Category Section */}
-
               <div className="blog-category">
-                <hr className="category-line" /> {/* Line above the category */}
-                <span className="category-label">Category: </span>{" "}
-                {/* Add the label before the category */}
+                <hr className="category-line" />
+                <span className="category-label">Category: </span>
                 {blog.category ? (
                   <span className="category">{blog.category}</span>
                 ) : (
@@ -160,12 +211,10 @@ const UserPage = () => {
 
               {/* Blog Actions */}
               <div className="blog-actions">
-                {/* Read More Button */}
                 <button onClick={() => handleBlogClick(blog._id)}>
                   Read More
                 </button>
 
-                {/* favourite Button */}
                 <button
                   onClick={() => handleFavourite(blog._id)}
                   className={
@@ -175,8 +224,8 @@ const UserPage = () => {
                   }
                 >
                   {bookmarkedBlogs.includes(blog._id)
-                    ? "Unbookmark"
-                    : "Bookmark"}
+                    ? "already in Favourite"
+                    : "Favourite"}
                 </button>
               </div>
             </div>

@@ -6,7 +6,7 @@ const { protectBlogs, adminBlogs } = require("../middleware/blog"); // Import pr
 const router = express.Router();
 
 // Create Blog (Admin only)
-router.post("/", protectBlogs, adminBlogs, async (req, res) => {
+router.post("/", protect, admin, async (req, res) => {
   const { title, content, image, category, tags } = req.body;
 
   try {
@@ -88,7 +88,7 @@ router.get("/getallblogs", protect, async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, admin, async (req, res) => {
   try {
     const { title, content, image, category, tags } = req.body;
 
@@ -98,18 +98,17 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    // Split tags string into an array if it's a comma-separated string
-    let updatedTags = blog.tags; // Default to the existing tags
-    if (tags) {
-      updatedTags = tags.split(",").map((tag) => tag.trim());
-    }
+    // Handle tags: Ensure it's an array
+    const processedTags = Array.isArray(tags)
+      ? tags
+      : tags.split(",").map((tag) => tag.trim());
 
     // Update the blog
     blog.title = title || blog.title;
     blog.content = content || blog.content;
     blog.image = image || blog.image;
     blog.category = category || blog.category;
-    blog.tags = updatedTags; // Update the tags with the new value
+    blog.tags = processedTags || blog.tags;
 
     await blog.save();
 
@@ -137,7 +136,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // Post a comment on a blog (normal users only)
-router.post("/:blogId/comments", protect, async (req, res) => {
+router.post("/:blogId/comments", protectBlogs, async (req, res) => {
   const { blogId } = req.params;
   const { content } = req.body;
 
@@ -311,5 +310,65 @@ router.get("/user/favourites", protect, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.get("/comments/:adminId", protect, admin, async (req, res) => {
+  try {
+    const { adminId } = req.params;
+
+    // Find all blogs authored by the given admin ID
+    const blogs = await Blog.find({ author: adminId });
+
+    // Extract comments along with blog title from all blogs
+    const allComments = blogs.flatMap((blog) =>
+      blog.comments.map((comment) => ({
+        commentId: comment._id,
+        content: comment.content,
+        author: comment.author,
+        blogTitle: blog.title, // Add the blog title to the comment object
+      }))
+    );
+
+    res.status(200).json({ comments: allComments });
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    res.status(500).json({ message: "Error fetching comments" });
+  }
+});
+
+// Delete a specific comment
+router.delete(
+  "/comments/:adminId/:commentId",
+  protect,
+  admin,
+  async (req, res) => {
+    try {
+      const { adminId, commentId } = req.params;
+
+      // Find the blog containing the comment posted by the admin
+      const blog = await Blog.findOne({
+        author: adminId,
+        "comments._id": commentId,
+      });
+
+      if (!blog) {
+        return res
+          .status(404)
+          .json({ message: "Comment not found or not authorized" });
+      }
+
+      // Remove the comment from the blog
+      blog.comments = blog.comments.filter(
+        (comment) => comment._id.toString() !== commentId
+      );
+
+      await blog.save();
+
+      res.status(200).json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Error deleting comment" });
+    }
+  }
+);
 
 module.exports = router;

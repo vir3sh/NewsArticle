@@ -69,7 +69,9 @@ body {
   }
   
   .blog-item button:hover {
-    background-color: #333;
+    background-color: white;
+    color: black;
+    outline: 0.25px solid black;
   }
   
   /* Empty state */
@@ -119,10 +121,7 @@ body {
   transition: background-color 0.3s ease; /* Smooth transition for background color */
 }
 
-/* Hover effect for each tag */
-.tag:hover {
-  background-color: #0056b3; /* Darker blue on hover */
-}
+
 
 /* Style for when no tags are available */
 
@@ -165,4 +164,33 @@ body {
 .no-category {
   color: #777; /* Grey color for no category */
   font-style: italic;
+}
+
+.search-bar {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.favourites-button{
+  background-color: black;
+}
+.favourites-button:hover{
+  background-color: white;
+  color: black;
+  outline: 0.25px solid black;
+}
+
+
+.blog-actions{
+  display: flex;
+  justify-content: space-between;
 }

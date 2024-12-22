@@ -32,7 +32,7 @@ router.post("/register", async (req, res) => {
     });
 
     // res.status(201).json({ message: "User registered successfully" });
-    res.json({ message: "Login successful", token });
+    res.json({ message: "register successful", token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -86,7 +86,7 @@ router.get("/me", protect, async (req, res) => {
   }
 });
 
-router.get("/profile", protect, async (req, res) => {
+router.get("/profile", protectBlogs, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password"); // Exclude password
     if (!user) {

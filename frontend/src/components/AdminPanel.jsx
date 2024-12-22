@@ -32,7 +32,7 @@ const AdminPanel = () => {
         setBlogs(response.data.blogs); // Assuming response has a `blogs` key
       } catch (err) {
         console.error("Error fetching blogs:", err);
-        setError("Error fetching blogs.");
+        // setError("Error fetching blogs.");
       }
     };
 
@@ -114,7 +114,7 @@ const AdminPanel = () => {
         tags: "",
       });
     } catch (err) {
-      setError("Error updating blog.");
+      setError("Error updating blog.", err);
     }
   };
 
@@ -134,6 +134,9 @@ const AdminPanel = () => {
       setError("Error deleting blog.");
     }
   };
+  const handleViewAllComments = () => {
+    navigate("/comments");
+  };
 
   return (
     <div className="admin-panel">
@@ -147,6 +150,9 @@ const AdminPanel = () => {
         onClick={() => setShowAddBlogForm(!showAddBlogForm)}
       >
         {showAddBlogForm ? "Cancel" : "Add New Blog"}
+      </button>
+      <button className="view-comments-btn" onClick={handleViewAllComments}>
+        View All Comments
       </button>
 
       {/* Add Blog Form */}
